@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pop Co-Producer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◉</span>
+      <div>
+        <h1>Pop Co-Producer</h1>
+        <p class="tagline">Upload your song. Get hit-producer feedback on what's missing — plus key &amp; BPM-matched Splice samples to fix it.</p>
+      </div>
+    </div>
+    <span id="ai-badge" class="badge muted">AI: checking…</span>
+  </header>
+
+  <main>
+    <!-- Step 1: Session setup -->
+    <section class="card" id="setup">
+      <h2><span class="step">1</span> Session setup</h2>
+      <div class="drop-row">
+        <label class="drop" id="drop-track">
+          <input type="file" id="track-file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg,.aiff,.aif">
+          <strong>Your track</strong>
+          <span class="drop-hint" id="track-name">Drop a WAV / MP3 / M4A / FLAC here or click to choose</span>
+        </label>
+        <label class="drop secondary" id="drop-ref">
+          <input type="file" id="ref-file" accept="audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg,.aiff,.aif">
+          <strong>Reference track <em>(optional)</em></strong>
+          <span class="drop-hint" id="ref-name">A hit song you want to sound like — compared band by band</span>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label>Song title
+          <input type="text" id="title" placeholder="e.g. Midnight Text">
+        </label>
+        <label>Pop style
+          <select id="genre"></select>
+        </label>
+        <label>Stage
+          <select id="stage">
+            <option value="demo">Demo / writing stage</option>
+            <option value="mix" selected>Mix (pre-master)</option>
+            <option value="master">Final master</option>
+          </select>
+        </label>
+        <label>Sounds like (artists / songs)
+          <input type="text" id="references" placeholder="e.g. Dua Lipa – Levitating, The Weeknd">
+        </label>
+      </div>
+      <label>What do you want from this session?
+        <textarea id="goal" rows="2" placeholder="e.g. Chorus feels flat and I don't know what's missing. Want it radio-ready."></textarea>
+      </label>
+      <details>
+        <summary>Lyrics / concept notes (optional — helps the AI give topline advice)</summary>
+        <textarea id="lyrics" rows="5" placeholder="Paste lyrics or describe the concept, the vocal, the vibe…"></textarea>
+      </details>
+      <div class="actions">
+        <button id="analyze-btn" class="primary" disabled>Analyze my track</button>
+        <span class="hint" id="analyze-hint">Choose a track to begin. Audio is analyzed locally in your browser.</span>
+      </div>
+      <div class="progress" id="progress" hidden>
+        <div class="bar"><div class="fill" id="progress-fill"></div></div>
+        <span id="progress-label">Decoding audio…</span>
+      </div>
+    </section>
+
+    <!-- Step 2: Results -->
+    <section id="results" hidden>
+      <section class="card">
+        <h2><span class="step">2</span> Producer's read</h2>
+        <div class="stats" id="stats"></div>
+        <audio id="player" controls preload="metadata"></audio>
+        <div class="viz-wrap">
+          <div class="viz-head">
+            <h3>Spectrogram, energy curve &amp; song map</h3>
+            <span class="hint">Click to jump in the song. Line = short-term loudness (LUFS).</span>
+          </div>
+          <div class="canvas-box" id="spectro-box">
+            <canvas id="spectrogram" height="260" role="img" aria-label="Spectrogram with loudness curve and section boundaries"></canvas>
+            <div class="playhead" id="playhead"></div>
+            <div class="tooltip" id="spectro-tip" hidden></div>
+          </div>
+          <div class="sections" id="sections"></div>
+        </div>
+        <div class="viz-wrap">
+          <div class="viz-head">
+            <h3>Tonal balance</h3>
+            <span class="hint" id="tonal-hint">Octave bands vs. the modern-pop target range (shaded)</span>
+          </div>
+          <div class="canvas-box">
+            <canvas id="tonal" height="220" role="img" aria-label="Tonal balance by octave band"></canvas>
+            <div class="tooltip" id="tonal-tip" hidden></div>
+          </div>
+          <div class="legend" id="tonal-legend"></div>
+          <details class="table-view"><summary>Show as table</summary><div id="tonal-table"></div></details>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">3</span> What's missing <span class="sub" id="findings-sub"></span></h2>
+        <div id="findings"></div>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">4</span> Splice sample picks <span class="sub" id="samples-sub"></span></h2>
+        <p class="hint">Each link opens Splice already filtered to your song's key and tempo. "Relative key" uses the same notes in the other mode — doubles your options.</p>
+        <div class="samples" id="samples"></div>
+      </section>
+
+      <section class="card" id="ai-card">
+        <h2><span class="step">5</span> AI co-producer session</h2>
+        <p class="hint">A world-class pop producer brain reads every measurement, the spectrogram and your brief, then gives you a full session plan: verdict, arrangement map with timestamps, mix &amp; master chains, and hand-picked Splice searches.</p>
+        <div class="actions">
+          <button id="ai-btn" class="primary">Start AI co-producer session</button>
+        </div>
+        <div id="chat"></div>
+        <form id="followup" hidden>
+          <input type="text" id="followup-input" placeholder="Ask your co-producer… e.g. &quot;Give me 3 chorus vocal-stack ideas&quot;" autocomplete="off">
+          <button type="submit" class="primary">Send</button>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    Measurements: ITU-R BS.1770 loudness, 4× oversampled true peak, FFT spectral &amp; stereo analysis, onset-autocorrelation tempo, Krumhansl key profiles, self-similarity song segmentation.
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

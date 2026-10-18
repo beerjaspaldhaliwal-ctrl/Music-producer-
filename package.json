@@ -1,0 +1,19 @@
+{
+  "name": "pop-coproducer",
+  "version": "1.0.0",
+  "description": "AI pop co-producer: analyzes your mix, tells you what's missing like a top-tier hit producer, and suggests key/BPM-matched Splice samples.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "express": "^5.3.0"
+  }
+}
